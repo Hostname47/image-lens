@@ -29,6 +29,11 @@ const product = {
 const imageContainer = document.getElementById("view-image-container");
 const viewImage = document.getElementById("view-image");
 const navigation = document.querySelector(".navigation .buttons");
+const lens = document.getElementById("lens");
+const previewBox = document.getElementById("preview-box");
+const previewImage = document.getElementById("preview-image");
+const lensSize = 80;
+const lensHalfSize = lensSize / 2;
 
 product.images.forEach((image) => {
   const button = document
@@ -47,6 +52,7 @@ const navButtons = document.querySelectorAll(
 navButtons.forEach((button, index) => {
   button.addEventListener("click", () => {
     viewImage.setAttribute("src", button.firstElementChild.src);
+    previewImage.style.backgroundImage = `url(${button.firstElementChild.src})`;
     navButtons.forEach((button) => button.classList.remove("selected"));
     button.classList.add("selected");
   });
@@ -76,6 +82,12 @@ viewImage.addEventListener("load", (e) => {
     viewImage.style.height = "100%";
     viewImage.style.width = "auto";
   }
+
+  const rect = imageContainer.getBoundingClientRect();
+
+  previewImage.style.backgroundSize = `${
+    (rect.width / lensSize) * rect.width
+  }px`;
 });
 
 let imagesDisplayed = 6;
@@ -123,7 +135,7 @@ bottomNavButton.addEventListener("click", () => {
 (function bootstrap() {
   // Set the first image of product into view image
   if (product.images.length > 0) {
-    viewImage.setAttribute("src", product.images[0]);
+    navButtons[0].click();
   }
 
   if (imagesDisplayed < product.images.length) {
@@ -131,3 +143,44 @@ bottomNavButton.addEventListener("click", () => {
     navigation.style.top = 0;
   }
 })();
+
+// Lens code area
+
+imageContainer.addEventListener("mouseenter", (e) => {
+  lens.style.display = "block";
+  previewBox.style.display = "flex";
+});
+
+imageContainer.addEventListener("mouseleave", () => {
+  lens.style.display = "none";
+  previewBox.style.display = "none";
+});
+
+imageContainer.addEventListener("mousemove", (e) => {
+  const rect = imageContainer.getBoundingClientRect();
+  const containerTop = rect.top + window.scrollY;
+  const containerLeft = rect.left + window.scrollX;
+
+  let lensLeft = e.pageX - containerLeft - lensHalfSize;
+  let lensTop = e.pageY - containerTop - lensHalfSize;
+
+  if (lensLeft <= 0) lensLeft = 0;
+  if (lensTop <= 0) lensTop = 0;
+  if (lensLeft + lensSize >= rect.width) lensLeft = rect.width - lensSize;
+  if (lensTop + lensSize >= rect.height) lensTop = rect.height - lensSize;
+
+  lens.style.left = `${lensLeft}px`;
+  lens.style.top = `${lensTop}px`;
+
+  // console.log("lens left:", lensLeft);
+  // console.log("lens top:", lensTop);
+  // console.log("rect width:", rect.width);
+  // console.log("rect height:", rect.height);
+
+  previewImage.style.backgroundPosition = `left ${
+    (lensLeft * 100) / (rect.width - lensSize)
+  }% top ${(lensTop * 100) / (rect.height - lensSize)}%`;
+  // previewImage.style.backgroundPosition = `left ${
+  //   (lensLeft * 100) / rect.width
+  // }% top ${(lensTop * 100) / rect.height}%`;
+});
