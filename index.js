@@ -20,7 +20,7 @@ const product = {
     "/assets/3.png",
     "/assets/4.png",
     "/assets/5.png",
-    "/assets/1.png",
+    "/assets/6.png",
     "/assets/2.png",
     "/assets/3.png",
   ],
@@ -28,48 +28,29 @@ const product = {
 
 const imageContainer = document.getElementById("view-image-container");
 const viewImage = document.getElementById("view-image");
+
 const navigation = document.querySelector(".navigation .buttons");
-const lens = document.getElementById("lens");
+const topNavButton = document.getElementById("top-nav-button");
+const bottomNavButton = document.getElementById("bottom-nav-button");
+const NAVIGATION_SIZE = 6;
+let bottomScrolled = 0;
+
 const previewBox = document.getElementById("preview-box");
 const previewImage = document.getElementById("preview-image");
+
+const lens = document.getElementById("lens");
 const lensSize = 80;
 const lensHalfSize = lensSize / 2;
 
-product.images.forEach((image) => {
-  const button = document
-    .querySelector(".navigation .clonnable")
-    .cloneNode(true);
-  button.classList.remove("none", "clonnable");
-  button.querySelector("img").src = image;
-
-  navigation.appendChild(button);
-});
-
-const navButtons = document.querySelectorAll(
-  ".navigation .buttons button:not(.clonnable)"
-);
-
-navButtons.forEach((button, index) => {
-  button.addEventListener("click", () => {
-    viewImage.setAttribute("src", button.firstElementChild.src);
-    previewImage.style.backgroundImage = `url(${button.firstElementChild.src})`;
-    navButtons.forEach((button) => button.classList.remove("selected"));
-    button.classList.add("selected");
-  });
-
-  if (index == 0) {
-    button.classList.add("selected");
-  }
-});
-
 viewImage.addEventListener("load", (e) => {
+  const borderStyle = "1px solid #9da7b0";
   if (viewImage.width > viewImage.height) {
     imageContainer.style.width = "100%";
     imageContainer.style.height = "auto";
     imageContainer.style.borderLeft = 0;
     imageContainer.style.borderRight = 0;
-    imageContainer.style.borderTop = "1px solid #9da7b0";
-    imageContainer.style.borderBottom = "1px solid #9da7b0";
+    imageContainer.style.borderTop = borderStyle;
+    imageContainer.style.borderBottom = borderStyle;
     viewImage.style.width = "100%";
     viewImage.style.height = "auto";
   } else {
@@ -77,8 +58,8 @@ viewImage.addEventListener("load", (e) => {
     imageContainer.style.width = "auto";
     imageContainer.style.borderTop = 0;
     imageContainer.style.borderBottom = 0;
-    imageContainer.style.borderLeft = "1px solid #9da7b0";
-    imageContainer.style.borderRight = "1px solid #9da7b0";
+    imageContainer.style.borderLeft = borderStyle;
+    imageContainer.style.borderRight = borderStyle;
     viewImage.style.height = "100%";
     viewImage.style.width = "auto";
   }
@@ -89,11 +70,6 @@ viewImage.addEventListener("load", (e) => {
     (rect.width / lensSize) * rect.width
   }px`;
 });
-
-let imagesDisplayed = 6;
-let bottomScrolled = 0;
-const topNavButton = document.getElementById("top-nav-button");
-const bottomNavButton = document.getElementById("bottom-nav-button");
 
 topNavButton.addEventListener("click", () => {
   if (bottomScrolled == 0) {
@@ -115,13 +91,13 @@ topNavButton.addEventListener("click", () => {
 });
 
 bottomNavButton.addEventListener("click", () => {
-  if (imagesDisplayed + bottomScrolled == product.images.length) {
+  if (NAVIGATION_SIZE + bottomScrolled == product.images.length) {
     return;
   }
   topNavButton.removeAttribute("disabled");
   bottomScrolled++;
 
-  if (imagesDisplayed + bottomScrolled == product.images.length) {
+  if (NAVIGATION_SIZE + bottomScrolled == product.images.length) {
     bottomNavButton.disabled = true;
   }
 
@@ -132,19 +108,38 @@ bottomNavButton.addEventListener("click", () => {
   navigation.style.top = `${newTop}px`;
 });
 
-(function bootstrap() {
+(function () {
+  product.images.forEach((image) => {
+    const button = document
+      .querySelector(".navigation .clonnable")
+      .cloneNode(true);
+    button.classList.remove("none", "clonnable");
+    button.querySelector("img").src = image;
+
+    button.addEventListener("click", () => {
+      viewImage.setAttribute("src", button.firstElementChild.src);
+      previewImage.style.backgroundImage = `url(${button.firstElementChild.src})`;
+      navButtons.forEach((button) => button.classList.remove("selected"));
+      button.classList.add("selected");
+    });
+
+    navigation.appendChild(button);
+  });
+
+  const navButtons = document.querySelectorAll(
+    ".navigation .buttons button:not(.clonnable)"
+  );
+
   // Set the first image of product into view image
   if (product.images.length > 0) {
     navButtons[0].click();
   }
 
-  if (imagesDisplayed < product.images.length) {
+  if (NAVIGATION_SIZE < product.images.length) {
     document.getElementById("bottom-nav-button").removeAttribute("disabled");
     navigation.style.top = 0;
   }
 })();
-
-// Lens code area
 
 imageContainer.addEventListener("mouseenter", (e) => {
   lens.style.display = "block";
@@ -172,15 +167,7 @@ imageContainer.addEventListener("mousemove", (e) => {
   lens.style.left = `${lensLeft}px`;
   lens.style.top = `${lensTop}px`;
 
-  // console.log("lens left:", lensLeft);
-  // console.log("lens top:", lensTop);
-  // console.log("rect width:", rect.width);
-  // console.log("rect height:", rect.height);
-
   previewImage.style.backgroundPosition = `left ${
     (lensLeft * 100) / (rect.width - lensSize)
   }% top ${(lensTop * 100) / (rect.height - lensSize)}%`;
-  // previewImage.style.backgroundPosition = `left ${
-  //   (lensLeft * 100) / rect.width
-  // }% top ${(lensTop * 100) / rect.height}%`;
 });
